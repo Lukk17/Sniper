@@ -6,8 +6,9 @@ Target practice.
 
 ### Android Studio/ IDEA Intellij:
 Import whole project (ASG_sniper) and in File > Project Structure... delete all modules.  
-Then import only `asg_sniper_client` without any gradle and only "Flutter" module.
-Without any Android etc modules.
+Then import whole `ASG_sniper` without any gradle and only "Flutter" module.
+Without any Android modules (it will ask for Android modules twice).
+Mark `lib` as source file and `test` as test.
 
 ### Visual Studio Code:
 Add whole project folder (ASG_sniper) to workspace.
