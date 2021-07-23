@@ -4,6 +4,7 @@ import 'package:asg_sniper/dto/serverInfo.dart';
 import 'package:asg_sniper/validators/numeric_validator.dart';
 import 'package:asg_sniper/values/sensor_values.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 
 import 'values/web_socket_values.dart';
@@ -42,35 +43,51 @@ class _HomePageState extends State<HomePage> {
   Map<String, String> _pinMapping = SensorValues.pinMapping();
   String? _selectedLedPin;
   final GlobalKey<FormState> _intervalFormKey = GlobalKey();
+  bool _clear = false;
+  final dateFormat = 'kk:mm:ss';
 
   @override
   void initState() {
+    super.initState();
+
     // ned to be initialized here not in widget build method,
     // because stream can be accessed only once.
     _sensorStream = _channel.stream.asBroadcastStream();
-    super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
-    return DefaultTabController(
-      length: 3,
-      initialIndex: 1,
-      child: Scaffold(
-        appBar: AppBar(
-          bottom: TabBar(
-            tabs: [
-              Tab(icon: Icon(Icons.whatshot)),
-              Tab(icon: Icon(Icons.info_outline)),
-              Tab(icon: Icon(Icons.settings)),
-            ],
-          ),
-        ),
-        body: TabBarView(children: [
-          _shootTableView(),
-          _serverInfoView(),
-          _settingsView(),
-        ]),
+    return GestureDetector(
+      // to un-focus when click outside of widgets (mostly text input)
+      onTap: () => FocusScope.of(context).requestFocus(new FocusNode()),
+      child: StreamBuilder(
+        stream: _sensorStream,
+        builder: (context, snapshot) {
+          if (snapshot.hasData && !_clear) {
+            _handleMessage(snapshot);
+          }
+          _clear = false;
+          return DefaultTabController(
+            length: 3,
+            initialIndex: 1,
+            child: Scaffold(
+              appBar: AppBar(
+                bottom: TabBar(
+                  tabs: [
+                    Tab(icon: Icon(Icons.whatshot)),
+                    Tab(icon: Icon(Icons.info_outline)),
+                    Tab(icon: Icon(Icons.settings)),
+                  ],
+                ),
+              ),
+              body: TabBarView(children: [
+                _shootTableView(),
+                _serverInfoView(),
+                _settingsView(),
+              ]),
+            ),
+          );
+        },
       ),
     );
   }
@@ -83,20 +100,20 @@ class _HomePageState extends State<HomePage> {
           Text(
             'Shoot',
           ),
-          StreamBuilder(
-            stream: _sensorStream,
-            builder: (context, snapshot) {
-              if (snapshot.hasData) {
-                _handleMessage(snapshot);
-              }
-              return Text(
-                '$_sensorValues',
-                style: Theme.of(context).textTheme.headline4,
-              );
-            },
+          SizedBox(
+            height: 500,
+            width: 250,
+            child: ListView(
+              children: [
+                Text(
+                  '$_sensorValues',
+                  style: Theme.of(context).textTheme.headline4,
+                ),
+              ],
+            ),
           ),
           MaterialButton(
-            onPressed: clearShootTable,
+            onPressed: _clearShootTable,
             color: Colors.blue,
             child: Text("Clear"),
           )
@@ -145,6 +162,8 @@ class _HomePageState extends State<HomePage> {
                     onSaved: (value) => _updateWebSocketInterval(value),
                     validator: (value) => NumericValidator.validate(value,
                         max: 50, integer: true),
+                    initialValue: _serverInfo.webSocketInterval,
+                    autofocus: false,
                   ),
                 ]),
               ),
@@ -166,7 +185,6 @@ class _HomePageState extends State<HomePage> {
             SizedBox(
               width: 100,
               child: DropdownButton<String>(
-                // hint: Text('Please choose a LED pin'),
                 value: _selectedLedPin,
                 items: _pinMapping.keys.toList().map((String value) {
                   return DropdownMenuItem<String>(
@@ -193,11 +211,13 @@ class _HomePageState extends State<HomePage> {
   void _handleMessage(AsyncSnapshot<Object?> snapshot) {
     String event = snapshot.data.toString();
     String message = "";
+    String timeNow = DateFormat(dateFormat).format(DateTime.now()).toString();
 
     if (event.contains(SensorValues.SERVER_INFO)) {
       message = event.toString().split(SensorValues.SERVER_INFO)[1];
-      ServerInfo serverInfo = jsonDecode(message);
-      print(serverInfo.toString());
+      Map<String, dynamic> map = jsonDecode(message);
+      _serverInfo = ServerInfo.fromJson(map);
+      _selectedLedPin = SensorValues.reversePinMapping()[_serverInfo.ledPin];
     }
 
     if (event.toString().contains(SensorValues.SENSOR_VALUE)) {
@@ -207,27 +227,28 @@ class _HomePageState extends State<HomePage> {
           .split(SensorValues.SENSOR_VALUE)[1];
 
       if (_sensorValues == SensorValues.PLACE_HOLDER) {
-        _sensorValues = message;
+        _sensorValues = "$timeNow - $message";
       } else {
-        _sensorValues += "$message\n";
+        _sensorValues = "$timeNow - $message\n$_sensorValues";
       }
     }
-    print(message);
+    print("Received message:\n$message");
   }
 
   void _updateServerInfo() {
+    print("Request: updateServerInfo");
     _channel.sink.add(WebSocketValues.UPDATE_STATS);
   }
 
   void _changeLedPin(String value) {
     String pinValue = _pinMapping[value]!;
-    print("updateLedPin $pinValue");
+    print("Request: updateLedPin $pinValue");
     _channel.sink.add("${WebSocketValues.CHANGE_LED_PIN}$pinValue");
   }
 
   void _updateWebSocketInterval(value) {
     int intervalValue = int.parse(value);
-    print("updateWebSocketInterval $intervalValue");
+    print("Request: updateWebSocketInterval $intervalValue");
     _channel.sink.add("${WebSocketValues.CHANGE_INTERVAL}$intervalValue");
   }
 
@@ -237,7 +258,10 @@ class _HomePageState extends State<HomePage> {
     super.dispose();
   }
 
-  void clearShootTable() {
+  void _clearShootTable() {
+    print("Clearing shoot table..");
     _sensorValues = SensorValues.PLACE_HOLDER;
+    _clear = true;
+    setState(() {});
   }
 }

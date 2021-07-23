@@ -12,4 +12,14 @@ class SensorValues {
     pins.putIfAbsent("D7 - pin 13", () => "13");
     return pins;
   }
+
+  static Map<String, String> reversePinMapping() {
+    Map<String, String> pins = new Map();
+    pins.putIfAbsent("5", () => "D1 - pin 5");
+    pins.putIfAbsent("4", () => "D2 - pin 4");
+    pins.putIfAbsent("14", () => "D5 - pin 14");
+    pins.putIfAbsent("12", () => "D6 - pin 12");
+    pins.putIfAbsent("13", () => "D7 - pin 13");
+    return pins;
+  }
 }
