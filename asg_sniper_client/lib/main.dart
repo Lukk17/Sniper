@@ -4,8 +4,11 @@ import 'package:asg_sniper/dto/serverInfo.dart';
 import 'package:asg_sniper/validators/numeric_validator.dart';
 import 'package:asg_sniper/values/sensor_values.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
+import 'package:vibration/vibration.dart';
+import 'package:flutter_vibrate/flutter_vibrate.dart';
 
 import 'values/web_socket_values.dart';
 
@@ -142,6 +145,11 @@ class _HomePageState extends State<HomePage> {
               onPressed: _updateServerInfo,
               color: Colors.lightGreen,
               child: Text("Update"),
+            ),
+            MaterialButton(
+              onPressed: _vibrate,
+              color: Colors.lightGreen,
+              child: Text("Update"),
             )
           ]),
     );
@@ -263,5 +271,13 @@ class _HomePageState extends State<HomePage> {
     _sensorValues = SensorValues.PLACE_HOLDER;
     _clear = true;
     setState(() {});
+  }
+
+  Future<void> _vibrate() async {
+    // HapticFeedback.lightImpact();
+    // if (await Vibration.hasVibrator()) {
+    // Vibration.vibrate();
+    // }
+    Vibrate.vibrate();
   }
 }
