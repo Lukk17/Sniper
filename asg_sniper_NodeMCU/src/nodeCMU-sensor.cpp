@@ -1,6 +1,7 @@
 #include "header.h"
 
 int ledPin = 12;    // pin D6
+int ledPin2 = 13;   // pin D7
 int sensorPin = A0; // pin A0
 
 String message = "";
@@ -137,7 +138,10 @@ void setup()
 {
   Serial.begin(115200);
   pinMode(ledPin, OUTPUT);
+  pinMode(ledPin2, OUTPUT);
   pinMode(sensorPin, INPUT);
+
+  digitalWrite(ledPin2, HIGH);
 
   Serial.println("\n");
   Serial.println("LED pin: " + String(ledPin));
@@ -189,8 +193,18 @@ void loop()
     }
 
     Serial.println("Sensor value: " + String(value));
-    digitalWrite(ledPin, HIGH);
+
+    if (digitalRead(ledPin) == HIGH)
+    {
+      digitalWrite(ledPin, LOW);
+      digitalWrite(ledPin2, HIGH);
+    }
+    else
+    {
+      digitalWrite(ledPin, HIGH);
+      digitalWrite(ledPin2, LOW);
+    }
+    
     delay(50);
-    digitalWrite(ledPin, LOW);
   }
 }
