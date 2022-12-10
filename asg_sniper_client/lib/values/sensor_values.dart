@@ -1,7 +1,7 @@
 class SensorValues {
-  static final String SENSOR_VALUE = "Sensor value: ";
-  static final String SERVER_INFO = "Welcome: ";
-  static final String PLACE_HOLDER = "Start !";
+  static const String SENSOR_VALUE = "Sensor value";
+  static const String SERVER_INFO = "Welcome: ";
+  static const String PLACE_HOLDER = "Start !";
 
   static Map<String, String> pinMapping() {
     Map<String, String> pins = new Map();

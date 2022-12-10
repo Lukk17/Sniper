@@ -5,7 +5,8 @@ class ServerInfo {
   String _webServerPort;
   String _webSocketInterval;
   String _lastNotificationTime;
-  String _ledPin;
+  String _redLedPin;
+  String _greenLedPin;
   String _sensorPin;
 
   ServerInfo(
@@ -15,7 +16,8 @@ class ServerInfo {
       this._webServerPort,
       this._webSocketInterval,
       this._lastNotificationTime,
-      this._ledPin,
+      this._redLedPin,
+      this._greenLedPin,
       this._sensorPin);
 
   ServerInfo.clean()
@@ -25,14 +27,17 @@ class ServerInfo {
         this._webServerPort = "",
         this._webSocketInterval = "",
         this._lastNotificationTime = "",
-        this._ledPin = "",
+        this._redLedPin = "",
+        this._greenLedPin = "",
         this._sensorPin = "";
 
   String get SSID => _SSID;
 
   String get sensorPin => _sensorPin;
 
-  String get ledPin => _ledPin;
+  String get redLedPin => _redLedPin;
+
+  String get greenLedPin => _greenLedPin;
 
   String get lastNotificationTime => _lastNotificationTime;
 
@@ -51,7 +56,8 @@ class ServerInfo {
         _webServerPort = json["WebServer port"]!.toString(),
         _webSocketInterval = json["Websocket interval"]!.toString(),
         _lastNotificationTime = json["Last notification time[s]"]!.toString(),
-        _ledPin = json["LED pin"]!.toString(),
+        _redLedPin = json["Red LED pin"]!.toString(),
+        _greenLedPin = json["Red LED pin"]!.toString(),
         _sensorPin = json["Sensor pin"]!.toString();
 
   @override
@@ -60,6 +66,6 @@ class ServerInfo {
         '_apIpAddress: $_apIpAddress, _webServerPort: $_webServerPort, '
         '_webSocketInterval: $_webSocketInterval, '
         '_lastNotificationTime: $_lastNotificationTime, '
-        '_ledPin: $_ledPin, _sensorPin: $_sensorPin}';
+        '_greenLedPin: $_greenLedPin, _redLedPin: $_redLedPin _sensorPin: $_sensorPin}';
   }
 }

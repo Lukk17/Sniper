@@ -1,4 +1,4 @@
-name: asg_sniper
+name: sniper
 description: Target practice.
 
 # The following line prevents the package from being accidentally published to
@@ -18,25 +18,37 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 version: 1.0.0+1
 
 environment:
-  sdk: ">=2.12.0 <3.0.0"
+  sdk: ">=2.18.5 <3.0.0"
 
 dependencies:
   flutter:
     sdk: flutter
-
-
+  web_socket_channel: ^2.2.0
+  intl: ^0.17.0
+  flutter_launcher_icons: ^0.11.0
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
-  cupertino_icons: ^1.0.2
-  web_socket_channel: ^2.1.0
-  intl: ^0.17.0
+  cupertino_icons: ^1.0.5
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
 
-# For information on the generic Dart part of this file, see the
-# following page: https://dart.dev/tools/pub/pubspec
+# flutter_launcher_icons configuration
+flutter_icons:
+  image_path: "assets/icons/target.png"
+
+  android: true
+  min_sdk_android: 16 # android min sdk min:16, default 21
+
+  ios: true
+  remove_alpha_ios: true
+
+  web:
+    generate: true
+    image_path: "assets/icons/target.png"
+    background_color: "#hexcode"
+    theme_color: "#hexcode"
 
 # The following section is specific to Flutter.
 flutter:
@@ -44,7 +56,9 @@ flutter:
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in
   # the material Icons class.
-  uses-material-design: true
+
+#  IF TRUE ADDS ~2MB TO COMPILED SIZE
+  uses-material-design: false
 
   # To add assets to your application, add an assets section, like this:
   # assets:

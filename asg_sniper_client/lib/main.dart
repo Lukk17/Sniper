@@ -1,27 +1,28 @@
 import 'dart:convert';
 
-import 'package:asg_sniper/dto/serverInfo.dart';
-import 'package:asg_sniper/validators/numeric_validator.dart';
-import 'package:asg_sniper/values/sensor_values.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:sniper/dto/serverInfo.dart';
+import 'package:sniper/validators/numeric_validator.dart';
+import 'package:sniper/values/sensor_values.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 
 import 'values/web_socket_values.dart';
 
 void main() {
-  runApp(AsgSniper());
+  runApp(Sniper());
 }
 
-class AsgSniper extends StatelessWidget {
+class Sniper extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'ASG Sniper',
+      title: 'Sniper',
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: HomePage(title: 'ASG Sniper'),
+      home: HomePage(title: 'Sniper'),
     );
   }
 }
@@ -36,7 +37,7 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  final _channel = WebSocketChannel.connect(Uri.parse(WebSocketValues.URI));
+  WebSocketChannel _channel = WebSocketChannel.connect(Uri.parse(WebSocketValues.URI));
   Stream _sensorStream = new Stream.empty();
   ServerInfo _serverInfo = new ServerInfo.clean();
   String _sensorValues = SensorValues.PLACE_HOLDER;
@@ -50,7 +51,7 @@ class _HomePageState extends State<HomePage> {
   void initState() {
     super.initState();
 
-    // ned to be initialized here not in widget build method,
+    // need to be initialized here not in widget build method,
     // because stream can be accessed only once.
     _sensorStream = _channel.stream.asBroadcastStream();
   }
@@ -74,9 +75,9 @@ class _HomePageState extends State<HomePage> {
               appBar: AppBar(
                 bottom: TabBar(
                   tabs: [
-                    Tab(icon: Icon(Icons.whatshot)),
-                    Tab(icon: Icon(Icons.info_outline)),
-                    Tab(icon: Icon(Icons.settings)),
+                    Tab(icon: Icon(CupertinoIcons.flame)),
+                    Tab(icon: Icon(CupertinoIcons.info)),
+                    Tab(icon: Icon(CupertinoIcons.settings)),
                   ],
                 ),
               ),
@@ -135,14 +136,20 @@ class _HomePageState extends State<HomePage> {
               'WebServer port: ${_serverInfo.webServerPort}\n'
               'WebSocket interval: ${_serverInfo.webSocketInterval}\n'
               'Last notification time:  ${_serverInfo.lastNotificationTime} sec\n'
-              'LED pin: ${_serverInfo.ledPin}\n'
+              'Red LED pin: ${_serverInfo.redLedPin}\n'
+              'Green LED pin: ${_serverInfo.greenLedPin}\n'
               'Sensor pin: ${_serverInfo.sensorPin}\n',
             ),
             MaterialButton(
               onPressed: _updateServerInfo,
               color: Colors.lightGreen,
               child: Text("Update"),
-            )
+            ),
+            MaterialButton(
+              onPressed: _reconnect,
+              color: Colors.blue,
+              child: Text("Reconnect"),
+            ),
           ]),
     );
   }
@@ -213,31 +220,41 @@ class _HomePageState extends State<HomePage> {
     String message = "";
     String timeNow = DateFormat(dateFormat).format(DateTime.now()).toString();
 
+    print("Received event printed below: \n${event.toString()}");
+
     if (event.contains(SensorValues.SERVER_INFO)) {
       message = event.toString().split(SensorValues.SERVER_INFO)[1];
       Map<String, dynamic> map = jsonDecode(message);
       _serverInfo = ServerInfo.fromJson(map);
-      _selectedLedPin = SensorValues.reversePinMapping()[_serverInfo.ledPin];
+      _selectedLedPin = SensorValues.reversePinMapping()[_serverInfo.redLedPin];
+      return;
     }
 
     if (event.toString().contains(SensorValues.SENSOR_VALUE)) {
-      message = event
-          .toString()
-          .replaceAll("\"", "")
-          .split(SensorValues.SENSOR_VALUE)[1];
+      Map<String, dynamic> map = jsonDecode(event.toString());
+      message = map[SensorValues.SENSOR_VALUE];
 
       if (_sensorValues == SensorValues.PLACE_HOLDER) {
         _sensorValues = "$timeNow - $message";
       } else {
         _sensorValues = "$timeNow - $message\n$_sensorValues";
       }
+      return;
     }
-    print("Received message:\n$message");
+
   }
 
   void _updateServerInfo() {
     print("Request: updateServerInfo");
     _channel.sink.add(WebSocketValues.UPDATE_STATS);
+  }
+
+  void _reconnect() {
+    setState(() {
+      _channel.sink.close();
+      _channel = WebSocketChannel.connect(Uri.parse(WebSocketValues.URI));
+      _sensorStream = _channel.stream.asBroadcastStream();
+    });
   }
 
   void _changeLedPin(String value) {

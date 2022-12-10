@@ -1,4 +1,4 @@
-package tech.revdev.asg_sniper
+package tech.revdev.sniper
 
 import io.flutter.embedding.android.FlutterActivity
 
