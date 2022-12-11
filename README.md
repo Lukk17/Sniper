@@ -23,7 +23,8 @@ d
 --------------------------------------------
 ### More info about each modules are in sub readme files in that modules:
 
-[a relative link](asg_sniper_client/README.md)
-[a relative link](asg_sniper_firmware/README.md)
+* [client](asg_sniper_client/README.md)  
+* [firmware](asg_sniper_firmware/README.md)
 
-
+--------------------------------------------
+<a href="https://www.flaticon.com/free-icons/target" title="target icons">Target icons created by Freepik - Flaticon</a>
